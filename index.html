@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf8">
+		<title></title>
+	</head>
+	<body>
+		<canvas width="288" height="512" id="canvas">
+		</canvas>
+	</body>
+
+	<script>
+	var canvas = document.getElementById("canvas"); // 获得画布
+	var context = canvas.getContext("2d");//获得画笔
+
+
+//创建背景 类    
+	function Background(x,y,width,height,imgUrl) {  //如果是类 ， 必须使用this来声明自己的成员
+		// body...
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.bgimg = new Image();//创建背景图片
+		this.bgimg.src = imgUrl;   // 为自己的成员图片赋值地址
+		var _this = this;
+		this.draw = function(){   //在类中内嵌了一个画背景的方法
+
+			_this.bgimg.onload = function(){
+
+				context.drawImage(_this.bgimg,_this.x,_this.y,_this.width,_this.height);//画这个背景
+			}
+		}
+	}
+	function Bird(x,y,images){//这个是鸟类  ，其中images是一个 数组 存放的是图片地址的数组 
+		this.x = x;
+		this.y = y;
+		this.imgs = new Array();  // 这个我们 吧他声明成了 类自己的属性  是  图片的数组 ，它是通过 地址数组转变而来的
+		for(var i= 0; i < images.length ; i ++){  //这里就是将 地址数组变为 图片数组的过程
+
+			var url = images[i];
+			var img = new Image();
+			img.src = url;
+			this.imgs[i] = img;
+		}
+		var sum = 0;
+		var _this = this;
+
+
+		this.timer = setInterval(function(){    //setInterVal是定时器 ， 第一个参数是定时执行的方法，第二个是 时间以毫秒为单位 
+			var arrayLength = _this.imgs.length;
+			var currentIndex = sum % arrayLength;   //计算出当前的索引
+			sum ++;
+			
+			var currentImage = _this.imgs[currentIndex];   //去除当前的图片  
+			context.drawImage(currentImage,_this.x,_this.y,48,48);//通过画笔花图片
+		},300);
+	}
+
+	var background = new Background(0,0,288,512,"img/bg_night.png");
+	background.draw();
+
+	var bird = new Bird(100,200,["img/bird0_0.png","img/bird0_1.png","img/bird0_2.png"]);
+
+	</script>
+</html>

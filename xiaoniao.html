@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>小鸟</title>
+</head>
+<body>
+<canvas width="288" height="512" id="canvas">
+    您的浏览器不支持
+</canvas>
+<script>
+    //全局变量区 background背景对象
+    var kongxi=130;
+    var canvas=document.getElementById("canvas");
+    var context=canvas.getContext("2d");
+    var background={
+        positionX:0,
+        positionY:0,
+        width:288,
+        height:512,
+        bgImage:(function(){
+            var a=new Image();
+            a.src="img/bg_night.png";
+           return a;
+        }()),//在创建对象时,会自动执行自调用函数,自调用函数调用之后为我们返回一张背景图片
+        draw:function() {
+            var _this = this;
+//            this.bgImage.onload=function(){//因为在onload事件中this指向onload前面的对象,
+// 在这里onload前提是this.bgImage图片,所以this出现了问题,我们在onload外需要把background保存一下再使用
+            context.drawImage(this.bgImage, _this.positionX, _this.positionY, _this.width, _this.height);
+            //画那张图片,从哪开始画x,y坐标,画多宽,多高
+//        }
+        }
+    }
+        //障碍物
+        var obstruction={
+            positionX:228,
+            //上面障碍物的高度范围为-288~0,-228是当下面为总长度320加空隙100,512-420=92,上面障碍物需要隐藏的高度320-90=228
+            positionY:Math.floor(Math.random()*229-228),//障碍物的高度随机出现
+            createImg:(function(){// createImg是一个数组
+               var imgs=[];
+               var images=["img/pipe_down.png","img/pipe_up.png"];
+                for(var i=0;i<images.length;i++) {
+                var a=new Image();
+                    a.src=images[i];
+                    imgs.push(a);
+                }
+                return imgs;
+            })(),
+            draw: function () {
+                this.positionX-=2;
+                context.drawImage(this.createImg[0],this.positionX,this.positionY,52,320);
+                context.drawImage(this.createImg[1],this.positionX,this.positionY+320+kongxi,52,320);
+                if(this.positionX<=-52){
+                    this.positionX=288;
+                    this.positionY=Math.floor(Math.random()*229-228);
+                }
+        }
+}
+    //创建鸟
+    var bird={
+        positionX:80,
+        positionY:200,
+        width:48,
+        height:48,
+        images:["img/bird1_0.png","img/bird1_1.png","img/bird1_2.png"],
+        index:0,//当前是第几张图片
+        wing:setInterval(function(){
+            bird.index++;
+        },200),
+        currentImg:function(){
+            var a=new Image();
+            a.src=this.images[this.index%3];
+//            this.index++;
+            return a;
+        },
+        draw:function(){  //画的方法
+            var _this=this;
+            this.bgImage=this.currentImg();//每次生成一张图片就赋给this.bgImage
+//            this.bgImage.onload=function(){//因为在onload事件中this指向onload前面的对象,在这里onload前提是this.bgImage图片,所以this出现了问题,我们在onload外需要把background保存一下再使用
+                _this.positionY+=5;
+                context.drawImage(this.bgImage,_this.positionX,_this.positionY,_this.width,_this.height);
+//            }
+        },
+        clearTime:function(){
+            clearInterval(this.wing);
+        }
+    }
+    //所有要画的方法区
+    function drawAll(){
+        context.clearRect(0,0,288,512);
+        background.draw();
+        bird.draw();
+        obstruction.draw();
+    }
+    document.onkeydown=function(e){
+      e=e||window.event;
+        var keycode= e.keyCode|| e.which;
+        if(keycode==32){//当点击空格时的操作,让Y值向上
+           bird.positionY-=60;
+        }
+    }
+    //判断鸟死的方法
+    function judge(){
+        //1,判断小鸟撞到天花板没
+        if(bird.positionY<=48){
+            clearInterval(timer);
+            bird.clearTime();
+        }
+        //判断小鸟撞到地板了吗?
+        if(bird.positionY>=512-48){
+            clearInterval(timer);
+            bird.clearTime();
+        }
+        //判断小鸟是否撞到上障碍物
+        if(bird.positionX+bird.width>=obstruction.positionX&&bird.positionX+5<=obstruction.positionX+52&&bird.positionY-5<=obstruction.positionY+320){
+            clearInterval(timer);
+            bird.clearTime();
+        }
+        //判断是否撞到下障碍物
+        if(bird.positionX+bird.width>=obstruction.positionX&&bird.positionX+5<=obstruction.positionX+52&&bird.height+bird.positionY-5>=obstruction.positionY+320+kongxi){
+            clearInterval(timer);
+            bird.clearTime();
+        }
+    }
+    //方法调用区
+   var timer= setInterval(function(){
+        drawAll();//调用所有要画的方法
+        judge();
+    },50)
+
+</script>
+</body>
+</html>
